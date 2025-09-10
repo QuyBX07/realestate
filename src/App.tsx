@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import MainLayout from "./layouts/MainLayout";
 
 import DashboardPage from "./pages/DashboardPage";
-// import AnalyticsPage from "./pages/AnalyticsPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 // import LocationsPage from "./pages/LocationsPage";
 // import SellersPage from "./pages/SellersPage";
 import PropertiesPage from "./pages/PropertiesPage";
-// import TimelinePage from "./pages/TimelinePage";
+import TimelinePage from "./pages/TimelinePage";
 // import ContactsPage from "./pages/ContactsPage";
 // import SearchPage from "./pages/SearchPage";
 // import FilterPage from "./pages/FilterPage";
@@ -20,16 +20,16 @@ function App() {
     switch (activeItem) {
       case "dashboard":
         return <DashboardPage />;
-      // case "analytics":
-      //   return <AnalyticsPage />;
+      case "analytics":
+        return <AnalyticsPage />;
       // case "locations":
       //   return <LocationsPage />;
       // case "sellers":
       //   return <SellersPage />;
       case "properties":
         return <PropertiesPage />;
-      // case "timeline":
-      //   return <TimelinePage />;
+      case "timeline":
+        return <TimelinePage />;
       // case "contacts":
       //   return <ContactsPage />;
       // case "search":

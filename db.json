@@ -1,0 +1,44 @@
+{
+  "properties": [
+    {
+      "_id": "68ac29b252b1fe3c1076e437",
+      "title": "Nhà mặt phố 3 tầng",
+      "address": "123 Nguyễn Trãi",
+      "city": "Hà Nội",
+      "price": 3500000000,
+      "area": 80,
+      "bedroom": 3,
+      "bathroom": 5,
+      "seller": "Nguyen Van A",
+      "phone": "0901234567",
+      "link": "https://batdongsan.com.vn/abc",
+      "date_post": "2025-08-25T00:00:00.000Z"
+    }
+  ],
+  "priceTrend": [
+    { "month": "T1", "avg_price": 4200000000, "count": 120 },
+    { "month": "T2", "avg_price": 4500000000, "count": 135 },
+    { "month": "T3", "avg_price": 4800000000, "count": 150 },
+    { "month": "T4", "avg_price": 5100000000, "count": 165 }
+  ],
+  "propertyTypes": [
+    { "name": "Căn hộ", "value": 450 },
+    { "name": "Nhà phố", "value": 320 },
+    { "name": "Đất nền", "value": 256 },
+    { "name": "Biệt thự", "value": 128 }
+  ],
+  "sellers": [
+    { "id": "1", "name": "Nguyễn Văn A", "phone": "0912345678", "posts": 45, "total_value": 180000000000 },
+    { "id": "2", "name": "Trần Thị B", "phone": "0987654321", "posts": 38, "total_value": 152000000000 },
+    { "id": "3", "name": "Lê Văn C", "phone": "0901234567", "posts": 32, "total_value": 128000000000 },
+    { "id": "4", "name": "Phạm Văn D", "phone": "0934567890", "posts": 28, "total_value": 112000000000 },
+    { "id": "5", "name": "Hoàng Thị E", "phone": "0923456789", "posts": 25, "total_value": 100000000000 }
+  ],
+  "websites": [
+    { "id": "1", "name": "Batdongsan.com.vn", "count": 520, "percent": 40.6, "growth": 12 },
+    { "id": "2", "name": "Alonhadat.com.vn", "count": 380, "percent": 29.7, "growth": 8 },
+    { "id": "3", "name": "Nhadat247.com.vn", "count": 210, "percent": 16.4, "growth": 15 },
+    { "id": "4", "name": "Cafeland.vn", "count": 95, "percent": 7.4, "growth": 5 },
+    { "id": "5", "name": "Homedy.com", "count": 75, "percent": 5.9, "growth": 20 }
+  ]
+}
