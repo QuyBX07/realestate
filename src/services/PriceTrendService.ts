@@ -1,6 +1,6 @@
 import { PriceTrend } from "../types/PriceTrend";
 
-const API_URL = "http://localhost:3001/priceTrend";
+const API_URL = "http://localhost:8081/api/properties/Month";
 
 export const priceTrendService = {
   async getAll(): Promise<PriceTrend[]> {

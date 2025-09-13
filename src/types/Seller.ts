@@ -1,7 +1,6 @@
 export interface Seller {
-  id: string;
-  name: string;
-  phone: string;
-  posts: number;        // số tin đăng
-  total_value: number;  // tổng giá trị (VNĐ)
+  seller: string;      // tên người bán
+  phone: string;       // số điện thoại
+  postCount: number;   // số tin đăng
+  totalPrice: number;  // tổng giá trị (VNĐ)
 }

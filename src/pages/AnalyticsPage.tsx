@@ -96,11 +96,13 @@ const AnalyticsPage: React.FC = () => {
                   }}
                 />
                 <Tooltip />
-                <Bar yAxisId="left" dataKey="count" fill="#a855f7" />
+                {/* Dùng postcount thay cho count */}
+                <Bar yAxisId="left" dataKey="postcount" fill="#a855f7" />
+                {/* Dùng averagePrice thay cho avg_price */}
                 <Line
                   yAxisId="right"
                   type="monotone"
-                  dataKey={(d: PriceTrend) => d.avg_price / 1_000_000_000}
+                  dataKey={(d: PriceTrend) => d.averagePrice / 1_000_000_000}
                   stroke="#3b82f6"
                   strokeWidth={2}
                 />
@@ -117,8 +119,8 @@ const AnalyticsPage: React.FC = () => {
               <PieChart>
                 <Pie
                   data={propertyTypes}
-                  dataKey="value"
-                  nameKey="name"
+                  dataKey="postcount" // thay value -> postcount
+                  nameKey="type"      // thay name -> type
                   outerRadius={100}
                   fill="#8884d8"
                   label
@@ -145,6 +147,7 @@ const AnalyticsPage: React.FC = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
       </div>
 
       {/* Hàng 2: Top người bán + Thống kê website */}
@@ -155,17 +158,17 @@ const AnalyticsPage: React.FC = () => {
             <h2 className="mb-4 font-semibold">Top người bán</h2>
             <ul className="space-y-4">
               {sellers.map((s, index) => (
-                <li key={s.id} className="flex items-center justify-between">
+                <li key={`${s.seller}-${index}`} className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">
-                      {index + 1}. {s.name}
+                      {index + 1}. {s.seller}
                     </div>
                     <div className="text-sm text-gray-500">📞 {s.phone}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold">{s.posts} tin</div>
+                    <div className="font-semibold">{s.postCount} tin</div>
                     <div className="text-sm text-gray-500">
-                      {(s.total_value / 1_000_000_000).toFixed(1)} tỷ
+                      {(s.totalPrice / 1_000_000_000).toFixed(1)} tỷ
                     </div>
                   </div>
                 </li>
@@ -174,19 +177,23 @@ const AnalyticsPage: React.FC = () => {
           </CardContent>
         </Card>
 
+
+
         {/* Thống kê website */}
         <Card>
           <CardContent>
             <h2 className="mb-4 font-semibold">Thống kê theo website</h2>
             <ul className="space-y-4">
               {websites.map((w) => (
-                <li key={w.id}>
-                  <div className="flex justify-between">
-                    <span>{w.name}</span>
-                    <span className="font-medium">
-                      {w.count}{" "}
-                      <span className="text-green-600">+{w.growth}%</span>
+                <li key={w.website}>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">{w.website}</span>
+                    <span className="text-sm text-gray-600">
+                      {w.postcount.toLocaleString()} tin
                     </span>
+                  </div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Giá trung bình: {w.averagePrice.toLocaleString()} VND
                   </div>
                   <div className="w-full h-2 mt-1 bg-gray-200 rounded">
                     <div
@@ -194,8 +201,8 @@ const AnalyticsPage: React.FC = () => {
                       style={{ width: `${w.percent}%` }}
                     ></div>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {w.percent}% tổng tin đăng
+                  <div className="flex justify-between text-sm text-gray-500 mt-1">
+                    <span>{w.percent}% tổng tin đăng</span>
                   </div>
                 </li>
               ))}

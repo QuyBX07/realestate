@@ -1,7 +1,6 @@
 export interface WebsiteStat {
-  id: string;
-  name: string;
-  count: number;   // số tin đăng
-  percent: number; // % tổng tin đăng
-  growth: number;  // tăng trưởng %
+  website: string;      // tên website
+  postcount: number;    // số tin đăng
+  averagePrice: number; // giá trung bình
+  percent: number;      // % tổng tin đăng
 }

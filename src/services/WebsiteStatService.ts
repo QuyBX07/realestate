@@ -1,11 +1,19 @@
 import { WebsiteStat } from "../types/WebsiteStat";
 
-const API_URL = "http://localhost:3001/websites";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8081/api";
 
 export const websiteStatService = {
   async getAll(): Promise<WebsiteStat[]> {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error("Failed to fetch website stats");
-    return res.json();
+    try {
+      const res = await fetch(`${API_URL}/properties/topwebsite`);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch website stats: ${res.status}`);
+      }
+      const data: WebsiteStat[] = await res.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching website stats:", error);
+      throw error;
+    }
   },
 };

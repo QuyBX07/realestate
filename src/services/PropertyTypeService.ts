@@ -1,6 +1,6 @@
 import { PropertyType } from "../types/PropertyType";
 
-const API_URL = "http://localhost:3001/propertyTypes"; // json-server port
+const API_URL = "http://localhost:8081/api/properties/TypeDistribution"; // json-server port
 
 export const propertyTypeService = {
   async getAll(): Promise<PropertyType[]> {

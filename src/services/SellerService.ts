@@ -1,6 +1,6 @@
 import { Seller } from "../types/Seller";
 
-const API_URL = "http://localhost:3001/sellers";
+const API_URL = "http://localhost:8081/api/properties/topsellers";
 
 export const sellerService = {
   async getAll(): Promise<Seller[]> {

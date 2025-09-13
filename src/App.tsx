@@ -4,7 +4,7 @@ import MainLayout from "./layouts/MainLayout";
 
 import DashboardPage from "./pages/DashboardPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
-// import LocationsPage from "./pages/LocationsPage";
+import LocationsPage from "./pages/LocationsPage";
 // import SellersPage from "./pages/SellersPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import TimelinePage from "./pages/TimelinePage";
@@ -22,8 +22,8 @@ function App() {
         return <DashboardPage />;
       case "analytics":
         return <AnalyticsPage />;
-      // case "locations":
-      //   return <LocationsPage />;
+      case "locations":
+        return <LocationsPage />;
       // case "sellers":
       //   return <SellersPage />;
       case "properties":
