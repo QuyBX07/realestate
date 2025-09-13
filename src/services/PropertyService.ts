@@ -1,6 +1,6 @@
 import { Property } from "../types/Property";
 
-const API_URL = "http://localhost:8081/api/properties";
+const API_URL = "https://estate.quy.name.vn/api/properties";
 
 export const propertyService = {
   async getAll(): Promise<Property[]> {

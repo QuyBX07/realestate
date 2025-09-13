@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
-  TrendingUp,
-  Users,
-  Building,
+  // TrendingUp,
+  // Users,
+  // Building,
   Phone,
   Eye,
   Search,
@@ -141,39 +141,6 @@ const DashboardPage: React.FC = () => {
     return "Khác";
   };
 
-  const stats = [
-    {
-      label: "Tổng tin đăng",
-      value: properties.length.toLocaleString(),
-      icon: Building,
-      color: "bg-blue-500",
-      change: "+12%",
-    },
-    {
-      label: "Tin đang bán",
-      value: properties.length.toLocaleString(),
-      icon: TrendingUp,
-      color: "bg-green-500",
-      change: "+8%",
-    },
-    {
-      label: "Tổng lượt xem",
-      value: "0",
-      icon: Eye,
-      color: "bg-purple-500",
-      change: "+25%",
-    },
-    {
-      label: "Người bán",
-      value: new Set(
-        properties.map((item) => item.seller)
-      ).size.toLocaleString(),
-      icon: Users,
-      color: "bg-orange-500",
-      change: "+5%",
-    },
-  ];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50">
@@ -201,37 +168,6 @@ const DashboardPage: React.FC = () => {
           Theo dõi và phân tích dữ liệu bất động sản từ các website
         </p>
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={index}
-              className="p-6 transition-shadow bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="mb-1 text-sm font-medium text-gray-600">
-                    {stat.label}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stat.value}
-                  </p>
-                  <p className="text-sm font-medium text-green-600">
-                    {stat.change}
-                  </p>
-                </div>
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
       {/* Filters and Search */}
       <div className="p-6 mb-6 bg-white border border-gray-200 shadow-sm rounded-xl">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
