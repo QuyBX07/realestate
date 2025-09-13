@@ -1,74 +1,180 @@
 import React, { useEffect, useState } from "react";
-import { Property } from "../types/Property";
-import { propertyService } from "../services/PropertyService";
+import { Home } from "lucide-react";
+import { propertyTypeSummaryService } from "../services/PropertyTypeSummaryService";
+import { propertyTypeTrendService } from "../services/PropertyTypeSummaryService";
+import { PropertyTypeSummary } from "../types/PropertyTypeSummary";
+import { PropertyTypeTrend } from "../types/PropertyTypeTrend";
 
-const PropertiesPage: React.FC = () => {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // 👈 khai báo error có kiểu string hoặc null
+const PropertySummaryPage: React.FC = () => {
+  // --- State cho Summary ---
+  const [summaryData, setSummaryData] = useState<PropertyTypeSummary[]>([]);
+  const [loadingSummary, setLoadingSummary] = useState(true);
+  const [errorSummary, setErrorSummary] = useState<string | null>(null);
+
+  // --- State cho Trend ---
+  const [trendData, setTrendData] = useState<PropertyTypeTrend[]>([]);
+  const [loadingTrend, setLoadingTrend] = useState(true);
+  const [errorTrend, setErrorTrend] = useState<string | null>(null);
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const data = await propertyService.getAll();
-      setProperties(data);
-    } catch (err) {   // 👈 đổi từ error -> err và ép kiểu any
-      setError("Không thể tải dữ liệu"); 
-      console.error(err);  // log ra để debug
-    } finally {
-      setLoading(false);
-    }
+    // Fetch summary
+    const fetchSummary = async () => {
+      try {
+        const res = await propertyTypeSummaryService.getSummaryByType();
+        setSummaryData(res);
+      } catch (err) {
+        console.error(err);
+        setErrorSummary("Không thể tải dữ liệu summary");
+      } finally {
+        setLoadingSummary(false);
+      }
+    };
+
+    // Fetch trend
+    const fetchTrend = async () => {
+      try {
+        const res = await propertyTypeTrendService.getTrendLast7Days();
+        setTrendData(res);
+      } catch (err) {
+        console.error(err);
+        setErrorTrend("Không thể tải dữ liệu trend");
+      } finally {
+        setLoadingTrend(false);
+      }
+    };
+
+    fetchSummary();
+    fetchTrend();
+  }, []);
+
+  const formatPrice = (price: number) => {
+    return (price / 1_000_000_000).toFixed(1) + " tỷ";
   };
 
-  fetchData();
-}, []);
+  if (loadingSummary || loadingTrend) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-gray-600">Đang tải dữ liệu...</div>
+      </div>
+    );
+  }
 
-  if (loading) return <p>Đang tải dữ liệu...</p>;
-  if (error) return <p>{error}</p>;
+  if (errorSummary || errorTrend) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-red-600">{errorSummary || errorTrend}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="mb-4 text-2xl font-bold">Properties</h1>
-      <table className="min-w-full border">
-        <thead>
-          <tr>
-            <th className="px-4 py-2 border">Tiêu đề</th>
-            <th className="px-4 py-2 border">Địa chỉ</th>
-            <th className="px-4 py-2 border">Thành phố</th>
-            <th className="px-4 py-2 border">Giá</th>
-            <th className="px-4 py-2 border">Diện tích</th>
-            <th className="px-4 py-2 border">Phòng ngủ</th>
-            <th className="px-4 py-2 border">Phòng tắm</th>
-            <th className="px-4 py-2 border">Người bán</th>
-            <th className="px-4 py-2 border">Điện thoại</th>
-            <th className="px-4 py-2 border">Link</th>
-            <th className="px-4 py-2 border">Ngày đăng</th>
-          </tr>
-        </thead>
-        <tbody>
-          {properties.map((p) => (
-            <tr key={p._id}>
-              <td className="px-4 py-2 border">{p.title}</td>
-              <td className="px-4 py-2 border">{p.address}</td>
-              <td className="px-4 py-2 border">{p.city}</td>
-              <td className="px-4 py-2 border">{p.price.toLocaleString()} VND</td>
-              <td className="px-4 py-2 border">{p.area}</td>
-              <td className="px-4 py-2 border">{p.bedroom}</td>
-              <td className="px-4 py-2 border">{p.bathroom}</td>
-              <td className="px-4 py-2 border">{p.seller}</td>
-              <td className="px-4 py-2 border">{p.phone}</td>
-              <td className="px-4 py-2 border">
-                <a href={p.link} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
-                  Xem
-                </a>
-              </td>
-              <td className="px-4 py-2 border">{p.date_post}</td>
-            </tr>
+    <div className="min-h-screen p-6 space-y-12 bg-gray-50">
+      {/* ===================== PHẦN 1: SUMMARY ===================== */}
+      <div>
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+          Thống kê BĐS theo loại hình
+        </h1>
+        <p className="mb-8 text-gray-600">
+          Tổng quan thị phần, giá trung bình, diện tích và khu vực hot
+        </p>
+
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {summaryData.map((item, idx) => (
+            <div
+              key={idx}
+              className="transition bg-white border shadow-sm rounded-2xl hover:shadow-lg"
+            >
+              <div className="p-6 space-y-4">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Home className="text-blue-500" />
+                    <h3 className="text-lg font-semibold">{item.type}</h3>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-gray-500">Tin đăng</p>
+                    <p className="font-semibold">{item.totalListings}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Giá TB</p>
+                    <p className="font-semibold">
+                      {formatPrice(item.avgPrice)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Diện tích TB</p>
+                    <p className="font-semibold">
+                      {item.avgArea.toFixed(0)} m²
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Thị phần</p>
+                    <p className="font-semibold">
+                      {item.marketShare.toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+
+                {/* Extra info */}
+                <div className="pt-2 text-sm text-gray-700">
+                  <p>
+                    <span className="text-gray-500">Khu vực hot: </span>
+                    <span className="font-medium text-blue-600">
+                      {item.hotCity || "N/A"}
+                    </span>
+                  </p>
+                  <p>
+                    <span className="text-gray-500">Khoảng giá: </span>
+                    {formatPrice(item.minPrice)} - {formatPrice(item.maxPrice)}
+                  </p>
+                </div>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
+
+      {/* ===================== PHẦN 2: TREND ===================== */}
+      <div>
+        <h2 className="mb-4 text-2xl font-bold text-gray-900">
+          Xu hướng BĐS 7 ngày gần đây
+        </h2>
+        <p className="mb-6 text-gray-600">
+          Biến động theo ngày của từng loại hình bất động sản
+        </p>
+
+        <div className="overflow-x-auto bg-white shadow rounded-2xl">
+          <table className="min-w-full text-sm text-left">
+            <thead className="text-gray-700 bg-gray-100">
+              <tr>
+                <th className="px-4 py-3">Ngày</th>
+                <th className="px-4 py-3">Loại hình</th>
+                <th className="px-4 py-3">Số tin đăng</th>
+                <th className="px-4 py-3">Giá TB</th>
+                <th className="px-4 py-3">Diện tích TB</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trendData.map((item, idx) => (
+                <tr key={idx} className="border-t hover:bg-gray-50">
+                  <td className="px-4 py-3">{item.date}</td>
+                  <td className="px-4 py-3">{item.type}</td>
+                  <td className="px-4 py-3">{item.count}</td>
+                  <td className="px-4 py-3">{formatPrice(item.avgPrice)}</td>
+                  <td className="px-4 py-3">{item.avgArea.toFixed(0)} m²</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default PropertiesPage;
+export default PropertySummaryPage;
