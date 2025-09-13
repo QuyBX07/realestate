@@ -1,5 +1,6 @@
 export interface PriceTrend {
+  id: string;        // 👈 thêm
   month: string;
-  avg_price: number; // 👈 trùng với JSON
+  avg_price: number;
   count: number;
 }
