@@ -13,6 +13,8 @@ import {
   Pie,
   Cell,
   Legend,
+  LineChart,
+  BarChart,
 } from "recharts";
 
 import { PriceTrend } from "../types/PriceTrend";
@@ -72,44 +74,41 @@ const AnalyticsPage: React.FC = () => {
       {/* Hàng 1: Xu hướng giá + Phân bố loại BĐS */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Xu hướng giá */}
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardContent>
-            <h2 className="mb-4 font-semibold">Xu hướng giá theo tháng</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={priceTrend}>
+            <h2 className="mb-4 font-semibold">Số tin theo tháng</h2>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={priceTrend}>
                 <XAxis dataKey="month" />
-                <YAxis
-                  yAxisId="left"
-                  label={{
-                    value: "Số tin",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  label={{
-                    value: "Giá (tỷ VNĐ)",
-                    angle: -90,
-                    position: "insideRight",
-                  }}
-                />
+                <YAxis />
                 <Tooltip />
-                {/* Dùng postcount thay cho count */}
-                <Bar yAxisId="left" dataKey="postcount" fill="#a855f7" />
-                {/* Dùng averagePrice thay cho avg_price */}
+                <Bar dataKey="postcount" fill="#a855f7" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent>
+            <h2 className="mb-4 font-semibold">Giá trung bình theo tháng</h2>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={priceTrend}>
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
                 <Line
-                  yAxisId="right"
                   type="monotone"
                   dataKey={(d: PriceTrend) => d.averagePrice / 1_000_000_000}
                   stroke="#3b82f6"
                   strokeWidth={2}
                 />
-              </ComposedChart>
+              </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
+      </div>
+
 
         {/* Phân bố loại BĐS */}
         <Card>
@@ -165,7 +164,7 @@ const AnalyticsPage: React.FC = () => {
                     <div className="font-medium">
                       {index + 1}. {s.seller}
                     </div>
-                    <div className="text-sm text-gray-500">📞 {s.phone}</div>
+                    {/* <div className="text-sm text-gray-500">📞 {s.phone}</div> */}
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">{s.postCount} tin</div>
@@ -202,7 +201,7 @@ const AnalyticsPage: React.FC = () => {
                     ></div>
                   </div>
                   <div className="flex justify-between mt-1 text-sm text-gray-500">
-                    <span>{w.percent}% tổng tin đăng</span>
+                    <span>{w.percent.toFixed(2)}% tổng tin đăng</span>
                   </div>
                 </li>
               ))}
