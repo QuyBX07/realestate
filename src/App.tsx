@@ -10,8 +10,9 @@ import PropertiesPage from "./pages/PropertiesPage";
 import TimelinePage from "./pages/TimelinePage";
 // import ContactsPage from "./pages/ContactsPage";
 // import SearchPage from "./pages/SearchPage";
-// import FilterPage from "./pages/FilterPage";
+import FilterPage from "./pages/FilterPage";
 // import SettingsPage from "./pages/SettingsPage";
+import ValuationPage from "./pages/ValuationPage";
 
 function App() {
   const [activeItem, setActiveItem] = useState("dashboard");
@@ -34,10 +35,12 @@ function App() {
       //   return <ContactsPage />;
       // case "search":
       //   return <SearchPage />;
-      // case "filter":
-      //   return <FilterPage />;
+      case "filter":
+        return <FilterPage />;
       // case "settings":
       //   return <SettingsPage />;
+      case "valuation":
+        return <ValuationPage />;
       default:
         return <DashboardPage />;
     }

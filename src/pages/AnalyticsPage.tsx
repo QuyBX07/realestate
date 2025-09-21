@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+// import { Button } from "../components/ui/button";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -27,10 +27,10 @@ import { sellerService } from "../services/SellerService";
 import { WebsiteStat } from "../types/WebsiteStat";
 import { websiteStatService } from "../services/WebsiteStatService";
 
-type TimeRange = "7 ngày qua" | "30 ngày qua" | "90 ngày qua";
+// type TimeRange = "7 ngày qua" | "30 ngày qua" | "90 ngày qua";
 
 const AnalyticsPage: React.FC = () => {
-  const [timeRange, setTimeRange] = useState<TimeRange>("30 ngày qua");
+  // const [timeRange, setTimeRange] = useState<TimeRange>("30 ngày qua");
   const [priceTrend, setPriceTrend] = useState<PriceTrend[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<PropertyType[]>([]);
   const [sellers, setSellers] = useState<Seller[]>([]);
@@ -56,7 +56,7 @@ const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* Bộ lọc thời gian + nút xuất báo cáo */}
-      <div className="flex items-center justify-between mb-6">
+      {/* <div className="flex items-center justify-between mb-6">
         <select
           value={timeRange}
           onChange={(e) => setTimeRange(e.target.value as TimeRange)}
@@ -67,7 +67,7 @@ const AnalyticsPage: React.FC = () => {
           <option value="90 ngày qua">90 ngày qua</option>
         </select>
         <Button>Xuất báo cáo</Button>
-      </div>
+      </div> */}
 
       {/* Hàng 1: Xu hướng giá + Phân bố loại BĐS */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -120,7 +120,7 @@ const AnalyticsPage: React.FC = () => {
                 <Pie
                   data={propertyTypes}
                   dataKey="postcount" // thay value -> postcount
-                  nameKey="type"      // thay name -> type
+                  nameKey="type" // thay name -> type
                   outerRadius={100}
                   fill="#8884d8"
                   label
@@ -147,7 +147,6 @@ const AnalyticsPage: React.FC = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-
       </div>
 
       {/* Hàng 2: Top người bán + Thống kê website */}
@@ -158,7 +157,10 @@ const AnalyticsPage: React.FC = () => {
             <h2 className="mb-4 font-semibold">Top người bán</h2>
             <ul className="space-y-4">
               {sellers.map((s, index) => (
-                <li key={`${s.seller}-${index}`} className="flex items-center justify-between">
+                <li
+                  key={`${s.seller}-${index}`}
+                  className="flex items-center justify-between"
+                >
                   <div>
                     <div className="font-medium">
                       {index + 1}. {s.seller}
@@ -177,8 +179,6 @@ const AnalyticsPage: React.FC = () => {
           </CardContent>
         </Card>
 
-
-
         {/* Thống kê website */}
         <Card>
           <CardContent>
@@ -186,13 +186,13 @@ const AnalyticsPage: React.FC = () => {
             <ul className="space-y-4">
               {websites.map((w) => (
                 <li key={w.website}>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <span className="font-medium">{w.website}</span>
                     <span className="text-sm text-gray-600">
                       {w.postcount.toLocaleString()} tin
                     </span>
                   </div>
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="mt-1 text-sm text-gray-500">
                     Giá trung bình: {w.averagePrice.toLocaleString()} VND
                   </div>
                   <div className="w-full h-2 mt-1 bg-gray-200 rounded">
@@ -201,7 +201,7 @@ const AnalyticsPage: React.FC = () => {
                       style={{ width: `${w.percent}%` }}
                     ></div>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-500 mt-1">
+                  <div className="flex justify-between mt-1 text-sm text-gray-500">
                     <span>{w.percent}% tổng tin đăng</span>
                   </div>
                 </li>

@@ -4,6 +4,17 @@ import { propertyTypeSummaryService } from "../services/PropertyTypeSummaryServi
 import { propertyTypeTrendService } from "../services/PropertyTypeSummaryService";
 import { PropertyTypeSummary } from "../types/PropertyTypeSummary";
 import { PropertyTypeTrend } from "../types/PropertyTypeTrend";
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Bar,
+  Line,
+  CartesianGrid,
+} from "recharts";
 
 const PropertySummaryPage: React.FC = () => {
   // --- State cho Summary ---
@@ -90,7 +101,9 @@ const PropertySummaryPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Home className="text-blue-500" />
-                    <h3 className="text-lg font-semibold">{item.type}</h3>
+                    <h3 className="text-lg font-semibold">
+                      {item.type ?? "Khác"}
+                    </h3>
                   </div>
                 </div>
 
@@ -142,17 +155,73 @@ const PropertySummaryPage: React.FC = () => {
       {/* ===================== PHẦN 2: TREND ===================== */}
       <div>
         <h2 className="mb-4 text-2xl font-bold text-gray-900">
-          Xu hướng BĐS 7 ngày gần đây
+          Xu hướng BĐS gần đây
         </h2>
         <p className="mb-6 text-gray-600">
-          Biến động theo ngày của từng loại hình bất động sản
+          Biến động theo loại hình bất động sản
         </p>
 
+        {/* Biểu đồ Trend */}
+        <div className="p-4 mb-8 bg-white shadow h-96 rounded-2xl">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="type" />
+              <YAxis
+                yAxisId="left"
+                label={{
+                  value: "Số tin đăng",
+                  angle: -90,
+                  position: "insideLeft",
+                  style: { textAnchor: "middle" },
+                }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                label={{
+                  value: "Giá TB (tỷ VNĐ)",
+                  angle: -90,
+                  position: "insideRight",
+                  style: { textAnchor: "middle" },
+                }}
+                tickFormatter={(v) => (v / 1_000_000_000).toFixed(1)}
+              />
+              <Tooltip
+                formatter={(value, name) => {
+                  if (name === "Giá TB") {
+                    return [
+                      (Number(value) / 1_000_000_000).toFixed(1) + " tỷ",
+                      name,
+                    ];
+                  }
+                  return [value, name];
+                }}
+              />
+              <Legend />
+              <Bar
+                yAxisId="left"
+                dataKey="count"
+                barSize={40}
+                fill="#4f46e5"
+                name="Số tin"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="avgPrice"
+                stroke="#f59e0b"
+                name="Giá TB"
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Bảng Trend (giữ nguyên) */}
         <div className="overflow-x-auto bg-white shadow rounded-2xl">
           <table className="min-w-full text-sm text-left">
             <thead className="text-gray-700 bg-gray-100">
               <tr>
-                <th className="px-4 py-3">Ngày</th>
                 <th className="px-4 py-3">Loại hình</th>
                 <th className="px-4 py-3">Số tin đăng</th>
                 <th className="px-4 py-3">Giá TB</th>
@@ -162,8 +231,11 @@ const PropertySummaryPage: React.FC = () => {
             <tbody>
               {trendData.map((item, idx) => (
                 <tr key={idx} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3">{item.date}</td>
-                  <td className="px-4 py-3">{item.type}</td>
+                  <td className="px-4 py-3">
+                    <h3 className="text-lg font-semibold">
+                      {item.type ?? "Khác"}
+                    </h3>
+                  </td>
                   <td className="px-4 py-3">{item.count}</td>
                   <td className="px-4 py-3">{formatPrice(item.avgPrice)}</td>
                   <td className="px-4 py-3">{item.avgArea.toFixed(0)} m²</td>

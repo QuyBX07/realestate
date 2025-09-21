@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from "react";
 import {
-  // TrendingUp,
-  // Users,
-  // Building,
   Phone,
-  Eye,
+  Shield,
   Search,
   Download,
+  Brain,
+  Bed,
+  Bath,
 } from "lucide-react";
 import { Property } from "../types/Property";
+import { PropertyOptions } from "../types/PropertyOptions";
 import { propertyService } from "../services/PropertyService";
+import { valuationService } from "../services/ValuationService";
+import { formatDateTime } from "../utils/dateUtils";
+import { formatLegal } from "../utils/dateUtils";
+import Swal from "sweetalert2";
 
 const DashboardPage: React.FC = () => {
   const [properties, setProperties] = useState<Property[]>([]);
+  const [options, setOptions] = useState<PropertyOptions>({
+    cities: [],
+    types: [],
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCity, setFilterCity] = useState("all");
   const [filterType, setFilterType] = useState("all");
@@ -26,35 +36,76 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await propertyService.getAll();
-        setProperties(data);
+        const [props, opts] = await Promise.all([
+          propertyService.getAll(),
+          propertyService.getOptions(),
+        ]);
+        setProperties(props);
+        setOptions(opts);
       } catch (err) {
-        // 👈 đổi từ error -> err và ép kiểu any
         setError("Không thể tải dữ liệu");
-        console.error(err); // log ra để debug
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
+  const handleValuation = async (property: Property) => {
+    try {
+      const res = await valuationService.predict(property);
+      Swal.fire({
+        title: "💰 Giá ước tính",
+        text: `${formatPrice(res.predicted_price)}`,
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#16a34a",
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        title: "❌ Lỗi",
+        text: "Không thể định giá",
+        icon: "error",
+        confirmButtonText: "Thử lại",
+        confirmButtonColor: "#dc2626",
+      });
+    }
+  };
+
+  const safeIncludes = (
+    field: string | number | null | undefined,
+    keyword: string
+  ) => (field ?? "").toString().toLowerCase().includes(keyword.toLowerCase());
+
   const filteredData = properties.filter((item) => {
     const matchesSearch =
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.seller.toLowerCase().includes(searchTerm.toLowerCase());
+      safeIncludes(item.title, searchTerm) ||
+      safeIncludes(item.address, searchTerm) ||
+      safeIncludes(item.seller, searchTerm) ||
+      safeIncludes(item.city, searchTerm) ||
+      safeIncludes(item.type, searchTerm) ||
+      safeIncludes(item.numberPhone, searchTerm) ||
+      safeIncludes(item.price, searchTerm) ||
+      safeIncludes(item.link, searchTerm);
 
-    const matchesCity = filterCity === "all" || item.city === filterCity;
+    const normalizeCity = (city: string) => {
+      if (!city) return "";
+      const c = city.toLowerCase().replace(/\s|\./g, "");
+      if (c.includes("hochiminh") || c.includes("hcm"))
+        return "TP. Hồ Chí Minh";
+      return city.trim();
+    };
 
-    const matchesType =
-      filterType === "all" ||
-      item.title.toLowerCase().includes(filterType.toLowerCase());
+    const matchesCity =
+      filterCity === "all" || normalizeCity(item.city) === filterCity;
+
+    const matchesType = filterType === "all" || item.type === filterType;
 
     let matchesPrice = true;
     if (filterPrice !== "all") {
-      const priceInMillions = item.price / 1_000_000; // convert sang triệu
+      const priceInMillions = item.price / 1_000_000;
       switch (filterPrice) {
         case "0-500":
           matchesPrice = priceInMillions < 500;
@@ -119,26 +170,61 @@ const DashboardPage: React.FC = () => {
     startIndex + itemsPerPage
   );
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(price);
-  };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN");
-  };
+  // const formatDate = (dateString: string) =>
+  //   new Date(dateString).toLocaleDateString("vi-VN");
 
-  const getPropertyType = (title: string) => {
-    const lowerTitle = title.toLowerCase();
-    if (lowerTitle.includes("căn hộ")) return "Căn hộ";
-    if (lowerTitle.includes("nhà phố")) return "Nhà phố";
-    if (lowerTitle.includes("đất nền")) return "Đất nền";
-    if (lowerTitle.includes("biệt thự")) return "Biệt thự";
-    if (lowerTitle.includes("chung cư")) return "Chung cư";
-    if (lowerTitle.includes("shophouse")) return "Shophouse";
-    return "Khác";
+  const renderPagination = () => {
+    const pageButtons = [];
+    const maxPagesToShow = 6;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = startPage + maxPagesToShow - 1;
+
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    // Nếu còn trang trước
+    if (startPage > 1) {
+      pageButtons.push(
+        <span key="start-ellipsis" className="px-2">
+          ...
+        </span>
+      );
+    }
+
+    for (let page = startPage; page <= endPage; page++) {
+      pageButtons.push(
+        <button
+          key={page}
+          onClick={() => setCurrentPage(page)}
+          className={`px-3 py-1 border rounded-md text-sm ${
+            currentPage === page
+              ? "bg-blue-600 text-white border-blue-600"
+              : "border-gray-300 text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          {page}
+        </button>
+      );
+    }
+
+    // Nếu còn trang sau
+    if (endPage < totalPages) {
+      pageButtons.push(
+        <span key="end-ellipsis" className="px-2">
+          ...
+        </span>
+      );
+    }
+
+    return pageButtons;
   };
 
   if (loading) {
@@ -168,52 +254,51 @@ const DashboardPage: React.FC = () => {
           Theo dõi và phân tích dữ liệu bất động sản từ các website
         </p>
       </div>
+
       {/* Filters and Search */}
       <div className="p-6 mb-6 bg-white border border-gray-200 shadow-sm rounded-xl">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          {/* City filter */}
           <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="px-4 py-2 border rounded-lg"
             value={filterCity}
             onChange={(e) => {
-              const val = e.target.value;
-              // chuẩn hoá value ngay tại đây
-              if (val === "TP. Hồ Chí Minh" || val === "TP.HCM") {
-                setFilterCity("TP.HCM"); // chuẩn hoá về 1 kiểu duy nhất
-              } else {
-                setFilterCity(val);
-              }
-              setCurrentPage(1); // reset về trang 1
+              setFilterCity(e.target.value);
+              setCurrentPage(1);
             }}
           >
             <option value="all">Tất cả thành phố</option>
-            <option value="TP.HCM">TP. Hồ Chí Minh</option>
-            <option value="Hà Nội">Hà Nội</option>
-            <option value="Bình Dương">Bình Dương</option>
+            {options.cities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
 
+          {/* Type filter */}
           <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="px-4 py-2 border rounded-lg"
             value={filterType}
             onChange={(e) => {
               setFilterType(e.target.value);
-              setCurrentPage(1); // reset về trang 1
+              setCurrentPage(1);
             }}
           >
             <option value="all">Tất cả loại BDS</option>
-            <option value="Căn hộ">Căn hộ</option>
-            <option value="Nhà phố">Nhà phố</option>
-            <option value="Đất nền">Đất nền</option>
-            <option value="Biệt thự">Biệt thự</option>
-            <option value="Chung cư">Chung cư</option>
-            <option value="Shophouse">Shophouse</option>
+            {options.types.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
           </select>
 
+          {/* Price filter */}
           <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="px-4 py-2 border rounded-lg"
             value={filterPrice}
             onChange={(e) => {
               setFilterPrice(e.target.value);
-              setCurrentPage(1); // reset về trang 1
+              setCurrentPage(1);
             }}
           >
             <option value="all">Tất cả giá</option>
@@ -227,12 +312,13 @@ const DashboardPage: React.FC = () => {
             <option value="20000+">Trên 20 tỷ</option>
           </select>
 
+          {/* Area filter */}
           <select
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="px-4 py-2 border rounded-lg"
             value={filterArea}
             onChange={(e) => {
               setFilterArea(e.target.value);
-              setCurrentPage(1); // reset về trang 1
+              setCurrentPage(1);
             }}
           >
             <option value="all">Tất cả diện tích</option>
@@ -244,18 +330,20 @@ const DashboardPage: React.FC = () => {
             <option value="200+">Trên 200 m²</option>
           </select>
 
-          <div className="relative">
+          {/* Search */}
+          <div className="relative md:col-span-2">
             <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
             <input
               type="text"
               placeholder="Tìm kiếm theo tiêu đề, địa chỉ, người bán..."
-              className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full py-2 pl-10 pr-4 border rounded-lg"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          <button className="flex items-center justify-center px-4 py-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
+          {/* Export button */}
+          <button className="flex items-center justify-center px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700">
             <Download className="w-4 h-4 mr-2" />
             Xuất Excel
           </button>
@@ -268,36 +356,51 @@ const DashboardPage: React.FC = () => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                <th className="px-6 py-4 text-xs font-medium text-left text-gray-500 uppercase">
                   Thông tin BDS
                 </th>
-                <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                <th className="px-6 py-4 text-xs font-medium text-left text-gray-500 uppercase">
                   Địa chỉ
                 </th>
-                <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                <th className="px-6 py-4 text-xs font-medium text-left text-gray-500 uppercase">
                   Người bán
                 </th>
-                <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                <th className="px-6 py-4 text-xs font-medium text-left text-gray-500 uppercase">
                   Giá / Diện tích
                 </th>
-                <th className="px-6 py-4 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                <th className="px-6 py-4 text-xs font-medium text-left text-gray-500 uppercase">
                   Nguồn
+                </th>
+                <th className="px-6 py-4 text-xs font-medium text-center text-gray-500 uppercase">
+                  Định giá
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200">
               {paginatedData.map((item) => (
-                <tr key={item._id} className="hover:bg-gray-50">
+                <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
                       <div className="mb-1 text-sm font-medium text-gray-900">
                         {item.title}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {getPropertyType(item.title)}
+                      <div className="text-sm text-gray-500">{item.type}</div>
+                      <div className="flex items-center mt-1">
+                        <Shield className="w-4 h-4 mr-1 text-gray-400" />
+                        <span className="text-xs text-gray-400">
+                          {formatLegal(item.legal)}
+                        </span>
                       </div>
                       <div className="flex items-center mt-1">
-                        <Eye className="w-4 h-4 mr-1 text-gray-400" />
+                        <Bed className="w-4 h-4 mr-1 text-gray-400" />
+                        <span className="text-xs text-gray-400">
+                          {item.bedroom}
+                        </span>
+                        {"     "}
+                        <Bath className="w-4 h-4 mr-1 text-gray-400" />
+                        <span className="text-xs text-gray-400">
+                          {item.bathroom}
+                        </span>
                       </div>
                     </div>
                   </td>
@@ -312,7 +415,7 @@ const DashboardPage: React.FC = () => {
                     <div className="flex items-center mt-1">
                       <Phone className="w-4 h-4 mr-1 text-gray-400" />
                       <span className="text-sm text-gray-500">
-                        {item.phone}
+                        {item.numberPhone}
                       </span>
                     </div>
                   </td>
@@ -320,7 +423,9 @@ const DashboardPage: React.FC = () => {
                     <div className="text-sm font-medium text-gray-900">
                       {formatPrice(item.price)}
                     </div>
-                    <div className="text-sm text-gray-500">{item.area} m²</div>
+                    <div className="text-sm text-gray-500">
+                      {item.area} m² | {formatPrice(item.unit_Price)}/m²
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
@@ -334,8 +439,17 @@ const DashboardPage: React.FC = () => {
                       </a>
                     </div>
                     <div className="text-sm text-gray-500">
-                      {formatDate(item.date_post)}
+                      {formatDateTime(item.postedDate)}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      onClick={() => handleValuation(item)}
+                      className="flex items-center justify-center px-3 py-1 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
+                    >
+                      <Brain className="w-4 h-4 mr-1" />
+                      AI
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -354,29 +468,19 @@ const DashboardPage: React.FC = () => {
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-sm border rounded-md disabled:opacity-50"
             >
               Trước
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-3 py-1 border rounded-md text-sm font-medium ${
-                  currentPage === page
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+
+            {renderPagination()}
+
             <button
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
               disabled={currentPage === totalPages}
-              className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-sm border rounded-md disabled:opacity-50"
             >
               Sau
             </button>

@@ -1,3 +1,5 @@
+import React from "react";
+
 export function Card({
   children,
   className,
@@ -6,7 +8,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`bg-white border rounded-lg shadow ${className ?? ""}`}>
+    <div className={`bg-white border rounded-2xl shadow-lg ${className ?? ""}`}>
       {children}
     </div>
   );
@@ -19,5 +21,27 @@ export function CardContent({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <div className={`p-4 ${className ?? ""}`}>{children}</div>;
+  return <div className={`p-6 ${className ?? ""}`}>{children}</div>;
+}
+
+export function CardHeader({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`px-6 py-4 border-b ${className ?? ""}`}>{children}</div>
+  );
+}
+
+export function CardTitle({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <h2 className={`text-xl font-bold ${className ?? ""}`}>{children}</h2>;
 }
