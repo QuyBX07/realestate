@@ -8,6 +8,7 @@ import {
   // Search,
   Filter,
   Activity,
+  Settings,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -25,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
     // { id: "search", label: "Tìm kiếm", icon: Search },
     { id: "filter", label: "Bộ lọc", icon: Filter },
     { id: "valuation", label: "Định giá AI", icon: Activity },
+    { id: "settings", label: "Cài đặt", icon: Settings },
   ];
 
   return (

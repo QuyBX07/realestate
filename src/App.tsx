@@ -11,7 +11,7 @@ import TimelinePage from "./pages/TimelinePage";
 // import ContactsPage from "./pages/ContactsPage";
 // import SearchPage from "./pages/SearchPage";
 import FilterPage from "./pages/FilterPage";
-// import SettingsPage from "./pages/SettingsPage";
+import SettingsPage from "./pages/SettingsPage";
 import ValuationPage from "./pages/ValuationPage";
 
 function App() {
@@ -37,8 +37,8 @@ function App() {
       //   return <SearchPage />;
       case "filter":
         return <FilterPage />;
-      // case "settings":
-      //   return <SettingsPage />;
+      case "settings":
+        return <SettingsPage />;
       case "valuation":
         return <ValuationPage />;
       default:
