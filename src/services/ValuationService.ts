@@ -26,7 +26,6 @@ export const valuationService = {
       type: property.type,
       bedroom: property.bedroom || 0, // thêm fallback
       bathroom: property.bathroom || 0,
-      frontage: property.frontage || 0,
       legal: property.legal || "chưa rõ",
     };
 

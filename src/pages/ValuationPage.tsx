@@ -8,12 +8,13 @@ const ValuationPage: React.FC = () => {
   const [formData, setFormData] = useState({
     city: "",
     district: "",
+    ward: "",
+    street: "",
     area: "",
     type: "",
-    bedrooms: "",
-    bathrooms: "",
-    facade: "",
-    legalStatus: "",
+    bedroom: "",
+    bathroom: "",
+    legal: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -27,21 +28,22 @@ const ValuationPage: React.FC = () => {
     setLoading(true);
     try {
       const payload: PropertyPayload = {
-        city: formData.city,
-        district: formData.district || undefined,
-        area: parseFloat(formData.area),
-        type: formData.type,
-        bedroom: parseInt(formData.bedrooms) || 0,
-        bathroom: parseInt(formData.bathrooms) || 0,
-        facade: parseFloat(formData.facade) || 0,
-        legalStatus: formData.legalStatus || "chưa rõ",
+        city: formData.city || "unknown",
+        district: formData.district || "unknown",
+        ward: formData.ward || "unknown",
+        street: formData.street || "unknown",
+        area: parseFloat(formData.area) || 0,
+        type: formData.type || "unknown",
+        bedroom: parseInt(formData.bedroom) || 0,
+        bathroom: parseInt(formData.bathroom) || 0,
+        legal: formData.legal || "unknown",
       };
 
       const res = await valuationPayloadService.predict(payload);
 
       Swal.fire({
         title: "💰 Kết quả định giá",
-        html: `<p class="text-green-600 text-xl font-bold">${res.predicted_price.toLocaleString(
+        html: `<p class="text-green-600 text-2xl font-bold">${res.predicted_price.toLocaleString(
           "vi-VN"
         )} VND</p>`,
         icon: "success",
@@ -62,55 +64,62 @@ const ValuationPage: React.FC = () => {
     }
   };
 
-  return (
-    <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50">
-      <div className="w-full max-w-2xl p-6 bg-white border shadow-lg rounded-2xl">
-        {/* Header */}
-        <div className="flex items-center mb-6">
-          <Calculator className="w-6 h-6 mr-2 text-blue-500" />
-          <h1 className="text-2xl font-bold text-gray-900">Định giá BĐS</h1>
-        </div>
+  const fields = [
+    { name: "city", placeholder: "Thành phố" },
+    { name: "district", placeholder: "Quận/Huyện" },
+    { name: "ward", placeholder: "Phường/Xã" },
+    { name: "street", placeholder: "Đường" },
+    { name: "area", placeholder: "Diện tích (m²)", type: "number" },
+    { name: "type", placeholder: "Loại hình (VD: Chung cư, Nhà phố...)" },
+    { name: "bedroom", placeholder: "Số phòng ngủ", type: "number" },
+    { name: "bathroom", placeholder: "Số phòng tắm", type: "number" },
+    { name: "legal", placeholder: "Pháp lý (VD: Sổ đỏ)" },
+  ];
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-4">
-          {[
-            { name: "city", placeholder: "Thành phố" },
-            { name: "district", placeholder: "Quận/Huyện" },
-            { name: "area", placeholder: "Diện tích (m²)", type: "number" },
-            {
-              name: "type",
-              placeholder: "Loại hình (VD: Chung cư, Nhà phố...)",
-            },
-            { name: "bedrooms", placeholder: "Số phòng ngủ", type: "number" },
-            { name: "bathrooms", placeholder: "Số phòng tắm", type: "number" },
-            { name: "facade", placeholder: "Mặt tiền (m)", type: "number" },
-            { name: "legalStatus", placeholder: "Pháp lý (VD: Sổ đỏ)" },
-          ].map((field) => (
-            <input
-              key={field.name}
-              name={field.name}
-              type={field.type ?? "text"}
-              placeholder={field.placeholder}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+  return (
+    <div className="min-h-screen p-6 bg-gray-50">
+      {/* Header */}
+      <div className="mb-8 text-center">
+        <div className="flex items-center justify-center mb-4">
+          <Calculator className="w-10 h-10 mr-2 text-blue-600" />
+          <h1 className="text-4xl font-bold text-gray-900">
+            Định Giá Bất Động Sản
+          </h1>
+        </div>
+        <p className="text-lg text-gray-600">
+          Điền thông tin chi tiết để AI ước tính giá trị bất động sản của bạn
+        </p>
+      </div>
+
+      {/* Form Container */}
+      <div className="max-w-4xl p-8 mx-auto bg-white border shadow-sm rounded-xl">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 gap-6 md:grid-cols-2"
+        >
+          {fields.map((field) => (
+            <div key={field.name}>
+              <input
+                name={field.name}
+                type={field.type ?? "text"}
+                placeholder={field.placeholder}
+                value={formData[field.name as keyof typeof formData]}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           ))}
 
           <div className="flex justify-center col-span-2">
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center justify-center px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-6 py-3 text-lg font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
             >
-              {loading ? "Đang định giá..." : "Định giá"}
+              {loading ? "Đang định giá..." : "Định giá ngay"}
             </button>
           </div>
         </form>
-
-        {/* Info */}
-        <div className="text-sm text-gray-500">
-          Điền đầy đủ thông tin để AI ước tính giá bất động sản chính xác nhất.
-        </div>
       </div>
     </div>
   );

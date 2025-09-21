@@ -89,7 +89,7 @@ const TimelinePage: React.FC = () => {
           className="px-3 py-2 border rounded"
         >
           <option value="last7days">7 ngày qua</option>
-          <option value="weeks">Theo tuần</option>
+          <option value="weeks">Theo tháng</option>
           <option value="year">Theo năm</option>
         </select>
 
