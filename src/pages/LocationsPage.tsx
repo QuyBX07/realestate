@@ -8,58 +8,58 @@ import {
   PieChart,
 } from "lucide-react";
 import { CityType } from "../types/CityType";
-import { PriceAllocation } from "../types/PriceAllocation";
 import { CityTypeService } from "../services/CityTypeService";
-import { PriceAllocationService } from "../services/PriceAllocationService";
 
 function LocationsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  // const [selectedCity, setSelectedCity] = useState("Tất cả thành phố");
-  // const [sortBy, setSortBy] = useState("Sắp xếp theo tin đăng");
-
   const [cities, setCities] = useState<CityType[]>([]);
-  const [priceAllocations, setPriceAllocations] = useState<PriceAllocation[]>(
-    []
-  );
 
-  // phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
   useEffect(() => {
     CityTypeService.getAll().then(setCities).catch(console.error);
-    PriceAllocationService.getAll()
-      .then(setPriceAllocations)
-      .catch(console.error);
   }, []);
 
-  // lọc theo search
+  // Filter & pagination
   const filteredCities = cities
     .filter((c) => c.city)
     .filter((c) => c.city.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  // tính trang
   const totalPages = Math.ceil(filteredCities.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedCities = filteredCities.slice(
-    startIndex,
-    startIndex + pageSize
-  );
+  const paginatedCities = filteredCities.slice(startIndex, startIndex + pageSize);
+
+  // ==== Phân bố giá trên frontend ====
+  const priceRanges = [
+    { label: "Dưới 2 tỷ", min: 0, max: 2_000_000_000 },
+    { label: "2-5 tỷ", min: 2_000_000_000, max: 5_000_000_000 },
+    { label: "5-10 tỷ", min: 5_000_000_000, max: 10_000_000_000 },
+    { label: "10-20 tỷ", min: 10_000_000_000, max: 20_000_000_000 },
+    { label: "Trên 20 tỷ", min: 20_000_000_000, max: Infinity },
+  ];
+
+  const allListings = cities.flatMap(c => Array(c.postcount || 0).fill(c.averagePrice || 0));
+  const totalListings = allListings.length;
+
+  const frontendPriceAllocations = priceRanges.map(range => {
+    const count = allListings.filter(p => p >= range.min && p < range.max).length;
+    return {
+      price: range.label,
+      percent: totalListings ? (count / totalListings) * 100 : 0
+    };
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-6 mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">
-            Phân tích theo địa điểm
-          </h1>
-          <p className="text-gray-600">
-            Thống kê thị trường BĐS theo thành phố và quận/huyện
-          </p>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">Phân tích theo địa điểm</h1>
+          <p className="text-gray-600">Thống kê thị trường BĐS theo thành phố và quận/huyện</p>
         </div>
 
-        {/* Search + Filters */}
+        {/* Search + Export */}
         <div className="p-6 mb-8 bg-white border shadow-sm rounded-xl">
           <div className="flex flex-col gap-4 lg:flex-row">
             <div className="flex-1">
@@ -71,36 +71,12 @@ function LocationsPage() {
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
-                    setCurrentPage(1); // reset về page 1 khi search
+                    setCurrentPage(1);
                   }}
                   className="w-full py-3 pl-10 pr-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
-
-            {/* <div className="lg:w-48">
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option>Tất cả thành phố</option>
-                {cities.map((c, i) => (
-                  <option key={i}>{c.city}</option>
-                ))}
-              </select>
-            </div> */}
-
-            {/* <div className="lg:w-48">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option>Sắp xếp theo tin đăng</option>
-                <option>Sắp xếp theo giá</option>
-              </select>
-            </div> */}
 
             <button className="flex items-center gap-2 px-6 py-3 font-medium text-white transition-colors duration-200 bg-blue-600 rounded-lg hover:bg-blue-700">
               <Download className="w-4 h-4" />
@@ -109,59 +85,49 @@ function LocationsPage() {
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-8 lg:grid-cols-4">
           {/* City Statistics */}
-          <div className="lg:col-span-2">
-            <div className="space-y-4">
+          <div className="lg:col-span-3">
+            <div className="grid gap-6 justify-center grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
               {paginatedCities.map((city, i) => (
                 <div
                   key={i}
-                  className="p-6 transition-shadow duration-200 bg-white border shadow-sm rounded-xl hover:shadow-md"
+                  className="p-5 bg-white border rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {city.city}
-                    </h3>
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">{city.city}</h3>
 
-                  <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-gray-400" />
-                      <div>
-                        <div className="text-sm text-gray-500">Tin đăng</div>
-                        <div className="font-semibold text-gray-900">
-                          {city.postcount?.toLocaleString() ?? 0}
-                        </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm text-gray-500">Tin đăng</span>
                       </div>
+                      <span className="font-semibold text-gray-900">{city.postcount?.toLocaleString() ?? 0}</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-gray-400" />
-                      <div>
-                        <div className="text-sm text-gray-500">Giá TB</div>
-                        <div className="font-semibold text-gray-900">
-                          {(city.averagePrice / 1_000_000_000).toFixed(1)} tỷ
-                        </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm text-gray-500">Giá TB</span>
                       </div>
+                      <span className="font-semibold text-gray-900">
+                        {(city.averagePrice / 1_000_000_000).toFixed(1)} tỷ
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <div>
-                        <div className="text-sm text-gray-500">
-                          Loại phổ biến
-                        </div>
-                        <div className="font-semibold text-gray-900">
-                          {city.popularType || "-"}
-                        </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-gray-400" />
+                        <span className="text-sm text-gray-500">Loại phổ biến</span>
                       </div>
+                      <span className="font-semibold text-gray-900">{city.popularType || "-"}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Pagination controls */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-4 mt-6">
                 <button
@@ -185,27 +151,21 @@ function LocationsPage() {
             )}
           </div>
 
-          {/* Price Distribution */}
+          {/* Price Distribution Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky p-6 bg-white border shadow-sm rounded-xl top-6">
               <div className="flex items-center gap-2 mb-6">
                 <PieChart className="w-5 h-5 text-gray-600" />
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Phân bố giá
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900">Phân bố giá</h3>
               </div>
 
               <div className="space-y-4">
-                {priceAllocations.map((range, i) => (
+                {frontendPriceAllocations.map((range, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">
-                        Dưới {range.price / 1_000_000_000} tỷ
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">{range.price}</span>
                       <div className="text-right">
-                        <div className="text-sm font-semibold text-gray-900">
-                          {range.percent}%
-                        </div>
+                        <div className="text-sm font-semibold text-gray-900">{range.percent.toFixed(1)}%</div>
                       </div>
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full">
