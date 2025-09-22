@@ -164,7 +164,7 @@ const AnalyticsPage: React.FC = () => {
                     <div className="font-medium">
                       {index + 1}. {s.seller}
                     </div>
-                    {/* <div className="text-sm text-gray-500">📞 {s.phone}</div> */}
+                    <div className="text-sm text-gray-500">📞 {s.phone}</div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">{s.postCount} tin</div>
