@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RefreshCw, Eye } from "lucide-react";
 
 interface Website {
+  _id: string;
   name: string;
-  status: string;
-  last: string;
-  posts: number;
-  success: string;
+  enabled: boolean;
+  updated_at: string;
   selected?: boolean;
 }
 
@@ -17,40 +16,21 @@ const SettingsPage: React.FC = () => {
     interval: 12, // mặc định 12h
   });
 
-  const [websites, setWebsites] = useState<Website[]>([
-    {
-      name: "Batdongsan.com.vn",
-      status: "Hoạt động",
-      last: "2024-09-20 14:30",
-      posts: 520,
-      success: "98.5%",
-      selected: false,
-    },
-    {
-      name: "Alonhadat.com.vn",
-      status: "Hoạt động",
-      last: "2024-09-20 14:25",
-      posts: 380,
-      success: "97.2%",
-      selected: false,
-    },
-    {
-      name: "Nhadat247.com.vn",
-      status: "Tạm dừng",
-      last: "2024-09-20 12:00",
-      posts: 210,
-      success: "95.8%",
-      selected: false,
-    },
-    {
-      name: "Cafeland.vn",
-      status: "Lỗi",
-      last: "2024-09-20 10:15",
-      posts: 95,
-      success: "89.3%",
-      selected: false,
-    },
-  ]);
+  const [websites, setWebsites] = useState<Website[]>([]);
+
+  // Fetch websites from API
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/websites")
+      .then((res) => res.json())
+      .then((data) => {
+        // Add selected property for checkbox
+        setWebsites(data.map((w: Website) => ({ ...w, selected: w.enabled ? true : false })));
+      })
+      .catch(() => {
+        // fallback: keep empty or show error
+      });
+  }, []);
+
 
   const toggleSelect = (index: number, checked: boolean) => {
     setWebsites((prev) =>
@@ -64,10 +44,52 @@ const SettingsPage: React.FC = () => {
 
   // Hàm lưu cài đặt
   const handleSave = () => {
-    console.log("Cấu hình lưu:", config);
-    alert("✅ Đã lưu cài đặt thành công.");
-    // TODO: gọi API lưu config + websites
+    // Lấy danh sách website đang enable nhưng bị bỏ tích
+    const toDisable = websites.filter(w => w.enabled && !w.selected).map(w => w.name);
+    // Lấy danh sách website đang disable nhưng được tích lại
+    const toEnable = websites.filter(w => !w.enabled && w.selected).map(w => w.name);
+
+    const requests = [];
+    if (toDisable.length > 0) {
+      requests.push(
+        fetch("http://127.0.0.1:8000/websites/disable", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ names: toDisable })
+        })
+      );
+    }
+    if (toEnable.length > 0) {
+      requests.push(
+        fetch("http://127.0.0.1:8000/websites/enable", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ names: toEnable })
+        })
+      );
+    }
+    if (requests.length > 0) {
+      Promise.all(requests)
+        .then(responses => {
+          if (responses.some(res => !res.ok)) throw new Error();
+          alert("✅ Đã lưu cài đặt thành công.");
+        })
+        .catch(() => {
+          alert("⚠️ Không thể cập nhật trạng thái website.");
+        });
+    } else {
+      alert("✅ Đã lưu cài đặt thành công.");
+    }
+    // TODO: gọi API lưu config nếu cần
   };
+
+
+  // State để điều khiển nút cào/dừng
+  const [isCrawling, setIsCrawling] = useState(false);
 
   // Hàm bắt đầu cào
   const handleStartCrawling = () => {
@@ -77,9 +99,40 @@ const SettingsPage: React.FC = () => {
       return;
     }
 
-    console.log("Bắt đầu cào các website:", selectedSites);
-    alert(`🚀 Bắt đầu cào ${selectedSites.length} website.`);
-    // TODO: gọi API hoặc trigger quá trình cào
+    const names = selectedSites.map(w => w.name);
+    // Gửi danh sách websites qua query string
+    const params = names.map(n => `websites=${encodeURIComponent(n)}`).join('&');
+    setIsCrawling(true);
+    fetch(`http://127.0.0.1:8000/crawl_now?${params}`, {
+      method: "POST"
+    })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        alert(`🚀 ${data.message}`);
+      })
+      .catch(() => {
+        alert("⚠️ Không thể bắt đầu cào.");
+        setIsCrawling(false);
+      });
+  };
+
+  // Hàm dừng cào
+  const handleStopCrawling = () => {
+    fetch("http://localhost:8000/stop_now", { method: "POST" })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(() => {
+        alert("🛑 Đã gửi yêu cầu dừng cào.");
+        setIsCrawling(false);
+      })
+      .catch(() => {
+        alert("⚠️ Không thể dừng cào.");
+      });
   };
 
   return (
@@ -104,9 +157,24 @@ const SettingsPage: React.FC = () => {
               </label>
               <select
                 value={config.interval}
-                onChange={(e) =>
-                  setConfig({ ...config, interval: Number(e.target.value) })
-                }
+                onChange={(e) => {
+                  const hours = Number(e.target.value);
+                  setConfig({ ...config, interval: hours });
+                  // Gọi API schedule_crawl khi thay đổi interval
+                  fetch(`http://127.0.0.1:8000/schedule_crawl?hours=${hours}`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json"
+                    }
+                  })
+                    .then((res) => {
+                      if (!res.ok) throw new Error("Lỗi khi cập nhật lịch cào");
+                      return res.json();
+                    })
+                    .catch(() => {
+                      alert("⚠️ Không thể cập nhật lịch cào.");
+                    });
+                }}
                 className="w-full px-3 py-2 border rounded-lg"
               >
                 <option value={12}>12 giờ</option>
@@ -123,21 +191,10 @@ const SettingsPage: React.FC = () => {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">
-                    Website
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">
-                    Lần cuối
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">
-                    Tin đăng
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">
-                    Thành công
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium text-center text-gray-500 uppercase">
-                    Hành động
-                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Website</th>
+                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Trạng thái</th>
+                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Cập nhật</th>
+                  <th className="px-6 py-3 text-xs font-medium text-center text-gray-500 uppercase">Hành động</th>
                   <th className="px-6 py-3 text-xs font-medium text-center text-gray-500 uppercase">
                     <label className="flex items-center justify-center gap-2">
                       Cào?
@@ -154,19 +211,16 @@ const SettingsPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {websites.map((site, i) => (
-                  <tr key={i} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {site.name}
-                    </td>
+                  <tr key={site._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{site.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-700">
-                      {site.last}
+                      {site.enabled ? (
+                        <span className="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded">Hoạt động</span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded">Tạm dừng</span>
+                      )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {site.posts}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {site.success}
-                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{new Date(site.updated_at).toLocaleString()}</td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center gap-2">
                         <button className="p-2 text-gray-600 rounded hover:bg-gray-100">
@@ -200,12 +254,21 @@ const SettingsPage: React.FC = () => {
           >
             💾 Lưu cài đặt
           </button>
-          <button
-            className="px-6 py-3 text-white bg-green-600 rounded-lg hover:bg-green-700"
-            onClick={handleStartCrawling}
-          >
-            🚀 Bắt đầu cào
-          </button>
+          {isCrawling ? (
+            <button
+              className="px-6 py-3 text-white bg-red-600 rounded-lg hover:bg-red-700"
+              onClick={handleStopCrawling}
+            >
+              🛑 Dừng ngay
+            </button>
+          ) : (
+            <button
+              className="px-6 py-3 text-white bg-green-600 rounded-lg hover:bg-green-700"
+              onClick={handleStartCrawling}
+            >
+              � Bắt đầu cào
+            </button>
+          )}
         </div>
       </div>
     </div>
