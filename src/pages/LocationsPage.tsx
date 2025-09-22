@@ -8,17 +8,30 @@ import {
   PieChart,
 } from "lucide-react";
 import { CityType } from "../types/CityType";
+import { PriceAllocation } from "../types/PriceAllocation";
 import { CityTypeService } from "../services/CityTypeService";
+import { PriceAllocationService } from "../services/PriceAllocationService";
 
 function LocationsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [cities, setCities] = useState<CityType[]>([]);
+  const [priceAllocations, setPriceAllocations] = useState<PriceAllocation[]>(
+    []
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6;
+  const pageSize = 5;
 
+  // Load city data
   useEffect(() => {
     CityTypeService.getAll().then(setCities).catch(console.error);
+  }, []);
+
+  // Load price allocation từ backend (MongoDB aggregation)
+  useEffect(() => {
+    PriceAllocationService.getAll()
+      .then(setPriceAllocations)
+      .catch(console.error);
   }, []);
 
   // Filter & pagination
@@ -33,28 +46,19 @@ function LocationsPage() {
     startIndex + pageSize
   );
 
-  // ==== Phân bố giá trên frontend ====
-  const priceRanges = [
-    { label: "Dưới 2 tỷ", min: 0, max: 2_000_000_000 },
-    { label: "2-5 tỷ", min: 2_000_000_000, max: 5_000_000_000 },
-    { label: "5-10 tỷ", min: 5_000_000_000, max: 10_000_000_000 },
-    { label: "10-20 tỷ", min: 10_000_000_000, max: 20_000_000_000 },
-    { label: "Trên 20 tỷ", min: 20_000_000_000, max: Infinity },
+  // Gắn nhãn bucket hiển thị
+  const priceLabels = [
+    [2_000_000_000, "Dưới 2 tỷ"],
+    [5_000_000_000, "2-5 tỷ"],
+    [10_000_000_000, "5-10 tỷ"],
+    [20_000_000_000, "10-20 tỷ"],
+    [100_000_000_001, "Trên 20 tỷ"],
   ];
 
-  const allListings = cities.flatMap((c) =>
-    Array(c.postcount || 0).fill(c.averagePrice || 0)
-  );
-  const totalListings = allListings.length;
-
-  const frontendPriceAllocations = priceRanges.map((range) => {
-    const count = allListings.filter(
-      (p) => p >= range.min && p < range.max
-    ).length;
-    return {
-      price: range.label,
-      percent: totalListings ? (count / totalListings) * 100 : 0,
-    };
+  const labeledPriceAllocations = priceAllocations.map((pa) => {
+    const label =
+      priceLabels.find((l) => l[0] === pa.price)?.[1] || pa.price.toString();
+    return { ...pa, label };
   });
 
   return (
@@ -181,15 +185,15 @@ function LocationsPage() {
               </div>
 
               <div className="space-y-4">
-                {frontendPriceAllocations.map((range, i) => (
+                {labeledPriceAllocations.map((range, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">
-                        {range.price}
+                        {range.label}
                       </span>
                       <div className="text-right">
                         <div className="text-sm font-semibold text-gray-900">
-                          {range.percent.toFixed(1)}%
+                          {range.percent.toFixed(2)}%
                         </div>
                       </div>
                     </div>
