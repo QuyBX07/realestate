@@ -1,7 +1,7 @@
 import { PropertyTypeSummary } from "../types/PropertyTypeSummary";
 import { PropertyTypeTrend } from "../types/PropertyTypeTrend";
 
-const API_BASE = "http://localhost:8081/api/properties";
+const API_BASE = "https://estate.quy.name.vn/api/properties";
 
 async function fetchApi<T>(url: string): Promise<T> {
   const res = await fetch(url);

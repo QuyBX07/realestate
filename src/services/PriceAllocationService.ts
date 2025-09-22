@@ -1,7 +1,7 @@
 import { PriceAllocation } from './../types/PriceAllocation';
 
 
-const API_URL = "http://localhost:8081/api/properties/priceallocation";
+const API_URL = "https://estate.quy.name.vn/api/properties/priceallocation";
 
 export const PriceAllocationService = {
   async getAll(): Promise<PriceAllocation[]> {

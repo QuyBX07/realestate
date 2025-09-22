@@ -1,6 +1,6 @@
 import { Timeline } from "../types/Timeline";
 
-const API_URL = "http://localhost:8081/api/timeline";
+const API_URL = "https://estate.quy.name.vn/api/timeline";
 
 export const timelineService = {
   async getByYear(year: number): Promise<Timeline[]> {
@@ -16,7 +16,7 @@ export const timelineService = {
   },
 
   async getLast7Days(): Promise<Timeline[]> {
-    const res = await fetch(`http://localhost:8081/api/timeline/last7days`);
+    const res = await fetch(`https://estate.quy.name.vn/api/timeline/last7days`);
     if (!res.ok) throw new Error("Failed to fetch last 7 days stats");
     return res.json();
   },

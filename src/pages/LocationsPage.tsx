@@ -15,7 +15,7 @@ function LocationsPage() {
   const [cities, setCities] = useState<CityType[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 6;
 
   useEffect(() => {
     CityTypeService.getAll().then(setCities).catch(console.error);
@@ -28,7 +28,10 @@ function LocationsPage() {
 
   const totalPages = Math.ceil(filteredCities.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedCities = filteredCities.slice(startIndex, startIndex + pageSize);
+  const paginatedCities = filteredCities.slice(
+    startIndex,
+    startIndex + pageSize
+  );
 
   // ==== Phân bố giá trên frontend ====
   const priceRanges = [
@@ -39,14 +42,18 @@ function LocationsPage() {
     { label: "Trên 20 tỷ", min: 20_000_000_000, max: Infinity },
   ];
 
-  const allListings = cities.flatMap(c => Array(c.postcount || 0).fill(c.averagePrice || 0));
+  const allListings = cities.flatMap((c) =>
+    Array(c.postcount || 0).fill(c.averagePrice || 0)
+  );
   const totalListings = allListings.length;
 
-  const frontendPriceAllocations = priceRanges.map(range => {
-    const count = allListings.filter(p => p >= range.min && p < range.max).length;
+  const frontendPriceAllocations = priceRanges.map((range) => {
+    const count = allListings.filter(
+      (p) => p >= range.min && p < range.max
+    ).length;
     return {
       price: range.label,
-      percent: totalListings ? (count / totalListings) * 100 : 0
+      percent: totalListings ? (count / totalListings) * 100 : 0,
     };
   });
 
@@ -55,8 +62,12 @@ function LocationsPage() {
       <div className="p-6 mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">Phân tích theo địa điểm</h1>
-          <p className="text-gray-600">Thống kê thị trường BĐS theo thành phố và quận/huyện</p>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">
+            Phân tích theo địa điểm
+          </h1>
+          <p className="text-gray-600">
+            Thống kê thị trường BĐS theo thành phố và quận/huyện
+          </p>
         </div>
 
         {/* Search + Export */}
@@ -92,9 +103,11 @@ function LocationsPage() {
               {paginatedCities.map((city, i) => (
                 <div
                   key={i}
-                  className="p-5 bg-white border rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between"
+                  className="flex flex-col justify-between p-5 transition-shadow duration-200 bg-white border shadow-sm rounded-xl hover:shadow-md"
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">{city.city}</h3>
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                    {city.city}
+                  </h3>
 
                   <div className="grid grid-cols-1 gap-3">
                     <div className="flex items-center justify-between">
@@ -102,7 +115,9 @@ function LocationsPage() {
                         <Building2 className="w-5 h-5 text-gray-400" />
                         <span className="text-sm text-gray-500">Tin đăng</span>
                       </div>
-                      <span className="font-semibold text-gray-900">{city.postcount?.toLocaleString() ?? 0}</span>
+                      <span className="font-semibold text-gray-900">
+                        {city.postcount?.toLocaleString() ?? 0}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -118,9 +133,13 @@ function LocationsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-5 h-5 text-gray-400" />
-                        <span className="text-sm text-gray-500">Loại phổ biến</span>
+                        <span className="text-sm text-gray-500">
+                          Loại phổ biến
+                        </span>
                       </div>
-                      <span className="font-semibold text-gray-900">{city.popularType || "-"}</span>
+                      <span className="font-semibold text-gray-900">
+                        {city.popularType || "-"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -156,16 +175,22 @@ function LocationsPage() {
             <div className="sticky p-6 bg-white border shadow-sm rounded-xl top-6">
               <div className="flex items-center gap-2 mb-6">
                 <PieChart className="w-5 h-5 text-gray-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Phân bố giá</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Phân bố giá
+                </h3>
               </div>
 
               <div className="space-y-4">
                 {frontendPriceAllocations.map((range, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">{range.price}</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {range.price}
+                      </span>
                       <div className="text-right">
-                        <div className="text-sm font-semibold text-gray-900">{range.percent.toFixed(1)}%</div>
+                        <div className="text-sm font-semibold text-gray-900">
+                          {range.percent.toFixed(1)}%
+                        </div>
                       </div>
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full">

@@ -1,6 +1,6 @@
     import { CityType } from "../types/CityType";
 
-    const API_URL = "http://localhost:8081/api/properties/statistics/cities";
+    const API_URL = "https://estate.quy.name.vn/api/properties/statistics/cities";
 
     export const CityTypeService = {
     async getAll(): Promise<CityType[]> {

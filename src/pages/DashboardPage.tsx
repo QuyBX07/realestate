@@ -170,11 +170,13 @@ const DashboardPage: React.FC = () => {
     startIndex + itemsPerPage
   );
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("vi-VN", {
+  const formatPrice = (price: number | null | undefined) => {
+    if (!price) return "Giá thỏa thuận"; // null, undefined, 0 đều trả về
+    return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(price);
+  };
 
   // const formatDate = (dateString: string) =>
   //   new Date(dateString).toLocaleDateString("vi-VN");
@@ -424,7 +426,10 @@ const DashboardPage: React.FC = () => {
                       {formatPrice(item.price)}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {item.area} m² | {formatPrice(item.unit_Price)}/m²
+                      {item.area} m² |{" "}
+                      {item.unit_price
+                        ? `${formatPrice(item.unit_price)}/m²`
+                        : null}
                     </div>
                   </td>
                   <td className="px-6 py-4">

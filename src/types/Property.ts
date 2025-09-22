@@ -7,7 +7,7 @@ export interface Property {
   numberPhone: string;
   price: number;
   area: number;
-  unit_Price: number;
+  unit_price: number;
   postedDate: string;
   link: string;
   legal: string;

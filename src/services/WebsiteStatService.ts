@@ -1,6 +1,6 @@
 import { WebsiteStat } from "../types/WebsiteStat";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8081/api";
+const API_URL = import.meta.env.VITE_API_URL || "https://estate.quy.name.vn/api";
 
 export const websiteStatService = {
   async getAll(): Promise<WebsiteStat[]> {

@@ -1,6 +1,6 @@
 import { TimelinePrice } from "../types/TimelinePrice";
 
-const API_URL = "http://localhost:8081/api/timeline/price";
+const API_URL = "https://estate.quy.name.vn/api/timeline/price";
 
 const timelinePriceService = {
   async getLast7Days(): Promise<TimelinePrice[]> {

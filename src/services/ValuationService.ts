@@ -5,7 +5,7 @@ import { parseAddress } from "../utils/address";
 import { PropertyPayload } from "../types/PropertyPayload";
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000", // 👈 anh chỉ cần set 1 lần
+  baseURL: "https://estate.quy.name.vn/ml", // 👈 anh chỉ cần set 1 lần
   headers: {
     "Content-Type": "application/json",
   },

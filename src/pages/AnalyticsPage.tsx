@@ -3,7 +3,6 @@ import { Card, CardContent } from "../components/ui/card";
 // import { Button } from "../components/ui/button";
 import {
   ResponsiveContainer,
-  ComposedChart,
   XAxis,
   YAxis,
   Tooltip,
@@ -74,41 +73,40 @@ const AnalyticsPage: React.FC = () => {
       {/* Hàng 1: Xu hướng giá + Phân bố loại BĐS */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Xu hướng giá */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardContent>
-            <h2 className="mb-4 font-semibold">Số tin theo tháng</h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={priceTrend}>
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="postcount" fill="#a855f7" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardContent>
+              <h2 className="mb-4 font-semibold">Số tin theo tháng</h2>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={priceTrend}>
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="postcount" fill="#a855f7" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardContent>
-            <h2 className="mb-4 font-semibold">Giá trung bình theo tháng</h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={priceTrend}>
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey={(d: PriceTrend) => d.averagePrice / 1_000_000_000}
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
+          <Card>
+            <CardContent>
+              <h2 className="mb-4 font-semibold">Giá trung bình theo tháng</h2>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={priceTrend}>
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey={(d: PriceTrend) => d.averagePrice / 1_000_000_000}
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Phân bố loại BĐS */}
         <Card>
