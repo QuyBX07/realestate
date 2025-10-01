@@ -3,12 +3,19 @@ import { Slider } from "@mui/material";
 import { propertyFilterService } from "../services/PropertyFilterService";
 import { Property } from "../types/Property";
 import { formatDateTime } from "../utils/dateUtils";
+import { propertyService } from "../services/PropertyService";
+import { PropertyOptions } from "../types/PropertyOptions";
 
 const PRICE_MAX = 20_000_000_000;
 const AREA_MAX = 1000;
 const ITEMS_PER_PAGE = 12;
 
 const FilterPage: React.FC = () => {
+  const [options, setOptions] = useState<PropertyOptions>({
+    cities: [],
+    types: [],
+  });
+
   const [types, setTypes] = useState<string[]>([]);
   const [city, setCity] = useState<string>("");
   const [priceRange, setPriceRange] = useState<number[]>([
@@ -51,6 +58,17 @@ const FilterPage: React.FC = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const opts = await propertyService.getOptions();
+        setOptions(opts);
+      } catch (err) {
+        console.error("Lỗi load options", err);
+      }
+    };
+    fetchOptions();
+  }, []);
 
   // Sắp xếp frontend
   useEffect(() => {
@@ -142,18 +160,16 @@ const FilterPage: React.FC = () => {
         {/* Loại hình */}
         <div>
           <h3 className="mb-2 font-semibold text-gray-700">Loại hình</h3>
-          {["Chung cư", "Nhà phố", "Biệt thự", "Shophouse", "Đất nền"].map(
-            (t) => (
-              <label key={t} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={types.includes(t)}
-                  onChange={(e) => handleTypeChange(t, e.target.checked)}
-                />
-                <span>{t}</span>
-              </label>
-            )
-          )}
+          {options.types.map((t) => (
+            <label key={t} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={types.includes(t)}
+                onChange={(e) => handleTypeChange(t, e.target.checked)}
+              />
+              <span>{t}</span>
+            </label>
+          ))}
         </div>
 
         {/* Thành phố */}
@@ -165,21 +181,7 @@ const FilterPage: React.FC = () => {
             onChange={(e) => setCity(e.target.value)}
           >
             <option value="">Tất cả</option>
-            {[
-              "Hà Nội",
-              "Hồ Chí Minh",
-              "Đà Nẵng",
-              "Đồng Nai",
-              "Khánh Hòa",
-              "Kiên Giang",
-              "Hưng Yên",
-              "Lâm Đồng",
-              "Thừa Thiên Huế",
-              "Bà Rịa - Vũng Tàu",
-              "Cần Thơ",
-              "Bình Dương",
-              "Quảng Nam",
-            ].map((c) => (
+            {options.cities.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>

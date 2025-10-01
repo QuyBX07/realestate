@@ -69,7 +69,7 @@ const TimelinePage: React.FC = () => {
   useEffect(() => {
     fetchData();
     fetchPriceData();
-  }, [mode, year, month, fetchData, fetchPriceData]);
+  }, [mode, year, month]);
 
   return (
     <div className="p-6 space-y-8">

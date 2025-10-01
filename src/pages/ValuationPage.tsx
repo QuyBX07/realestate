@@ -17,7 +17,7 @@ const ValuationPage: React.FC = () => {
     legal: "",
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,8 +25,18 @@ const ValuationPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+
     try {
+      // Hiện popup loading
+      Swal.fire({
+        title: "🤖 Đang phân tích...",
+        text: "Vui lòng chờ trong giây lát",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
       const payload: PropertyPayload = {
         city: formData.city || "unknown",
         district: formData.district || "unknown",
@@ -39,17 +49,20 @@ const ValuationPage: React.FC = () => {
         legal: formData.legal || "unknown",
       };
 
+      // Gọi API
       const res = await valuationPayloadService.predict(payload);
 
-      Swal.fire({
-        title: "💰 Kết quả định giá",
-        html: `<p class="text-green-600 text-2xl font-bold">${res.predicted_price.toLocaleString(
-          "vi-VN"
-        )} VND</p>`,
-        icon: "success",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#16a34a",
-      });
+      setTimeout(() => {
+        Swal.fire({
+          title: "💰 Kết quả định giá",
+          html: `<p class="text-green-600 text-2xl font-bold">${res.predicted_price.toLocaleString(
+            "vi-VN"
+          )} VND</p>`,
+          icon: "success",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#16a34a",
+        });
+      }, 2500);
     } catch (err) {
       console.error(err);
       Swal.fire({
@@ -59,8 +72,6 @@ const ValuationPage: React.FC = () => {
         confirmButtonText: "Thử lại",
         confirmButtonColor: "#dc2626",
       });
-    } finally {
-      setLoading(false);
     }
   };
 

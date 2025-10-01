@@ -19,6 +19,6 @@ export const propertyTypeSummaryService = {
 
 export const propertyTypeTrendService = {
   getTrendLast7Days(): Promise<PropertyTypeTrend[]> {
-    return fetchApi<PropertyTypeTrend[]>(`${API_BASE}/type-trend`);
+    return fetchApi<PropertyTypeTrend[]>(`http://localhost:8081/api/properties/type-trend`);
   },
 };

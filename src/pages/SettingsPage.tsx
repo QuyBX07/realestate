@@ -20,17 +20,21 @@ const SettingsPage: React.FC = () => {
 
   // Fetch websites from API
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/websites")
+    fetch("https://estate.quy.name.vn/crawl/websites")
       .then((res) => res.json())
       .then((data) => {
         // Add selected property for checkbox
-        setWebsites(data.map((w: Website) => ({ ...w, selected: w.enabled ? true : false })));
+        setWebsites(
+          data.map((w: Website) => ({
+            ...w,
+            selected: w.enabled ? true : false,
+          }))
+        );
       })
       .catch(() => {
         // fallback: keep empty or show error
       });
   }, []);
-
 
   const toggleSelect = (index: number, checked: boolean) => {
     setWebsites((prev) =>
@@ -45,37 +49,41 @@ const SettingsPage: React.FC = () => {
   // Hàm lưu cài đặt
   const handleSave = () => {
     // Lấy danh sách website đang enable nhưng bị bỏ tích
-    const toDisable = websites.filter(w => w.enabled && !w.selected).map(w => w.name);
+    const toDisable = websites
+      .filter((w) => w.enabled && !w.selected)
+      .map((w) => w.name);
     // Lấy danh sách website đang disable nhưng được tích lại
-    const toEnable = websites.filter(w => !w.enabled && w.selected).map(w => w.name);
+    const toEnable = websites
+      .filter((w) => !w.enabled && w.selected)
+      .map((w) => w.name);
 
     const requests = [];
     if (toDisable.length > 0) {
       requests.push(
-        fetch("http://127.0.0.1:8000/websites/disable", {
+        fetch("https://estate.quy.name.vn/crawl/websites/disable", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({ names: toDisable })
+          body: JSON.stringify({ names: toDisable }),
         })
       );
     }
     if (toEnable.length > 0) {
       requests.push(
-        fetch("http://127.0.0.1:8000/websites/enable", {
+        fetch("https://estate.quy.name.vn/crawl/websites/enable", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({ names: toEnable })
+          body: JSON.stringify({ names: toEnable }),
         })
       );
     }
     if (requests.length > 0) {
       Promise.all(requests)
-        .then(responses => {
-          if (responses.some(res => !res.ok)) throw new Error();
+        .then((responses) => {
+          if (responses.some((res) => !res.ok)) throw new Error();
           alert("✅ Đã lưu cài đặt thành công.");
         })
         .catch(() => {
@@ -86,7 +94,6 @@ const SettingsPage: React.FC = () => {
     }
     // TODO: gọi API lưu config nếu cần
   };
-
 
   // State để điều khiển nút cào/dừng
   const [isCrawling, setIsCrawling] = useState(false);
@@ -99,18 +106,20 @@ const SettingsPage: React.FC = () => {
       return;
     }
 
-    const names = selectedSites.map(w => w.name);
+    const names = selectedSites.map((w) => w.name);
     // Gửi danh sách websites qua query string
-    const params = names.map(n => `websites=${encodeURIComponent(n)}`).join('&');
+    const params = names
+      .map((n) => `websites=${encodeURIComponent(n)}`)
+      .join("&");
     setIsCrawling(true);
-    fetch(`http://127.0.0.1:8000/crawl_now?${params}`, {
-      method: "POST"
+    fetch(`https://estate.quy.name.vn/crawl/crawl_now?${params}`, {
+      method: "POST",
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error();
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         alert(`🚀 ${data.message}`);
       })
       .catch(() => {
@@ -122,7 +131,7 @@ const SettingsPage: React.FC = () => {
   // Hàm dừng cào
   const handleStopCrawling = () => {
     fetch("http://localhost:8000/stop_now", { method: "POST" })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error();
         return res.json();
       })
@@ -161,12 +170,15 @@ const SettingsPage: React.FC = () => {
                   const hours = Number(e.target.value);
                   setConfig({ ...config, interval: hours });
                   // Gọi API schedule_crawl khi thay đổi interval
-                  fetch(`http://127.0.0.1:8000/schedule_crawl?hours=${hours}`, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json"
+                  fetch(
+                    `https://estate.quy.name.vn/crawl/schedule_crawl?hours=${hours}`,
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
                     }
-                  })
+                  )
                     .then((res) => {
                       if (!res.ok) throw new Error("Lỗi khi cập nhật lịch cào");
                       return res.json();
@@ -191,10 +203,18 @@ const SettingsPage: React.FC = () => {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Website</th>
-                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Trạng thái</th>
-                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">Cập nhật</th>
-                  <th className="px-6 py-3 text-xs font-medium text-center text-gray-500 uppercase">Hành động</th>
+                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                    Website
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                    Trạng thái
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-left text-gray-500 uppercase">
+                    Cập nhật
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-center text-gray-500 uppercase">
+                    Hành động
+                  </th>
                   <th className="px-6 py-3 text-xs font-medium text-center text-gray-500 uppercase">
                     <label className="flex items-center justify-center gap-2">
                       Cào?
@@ -212,15 +232,23 @@ const SettingsPage: React.FC = () => {
               <tbody className="divide-y divide-gray-200">
                 {websites.map((site, i) => (
                   <tr key={site._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{site.name}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      {site.name}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-700">
                       {site.enabled ? (
-                        <span className="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded">Hoạt động</span>
+                        <span className="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded">
+                          Hoạt động
+                        </span>
                       ) : (
-                        <span className="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded">Tạm dừng</span>
+                        <span className="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded">
+                          Tạm dừng
+                        </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{new Date(site.updated_at).toLocaleString()}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {new Date(site.updated_at).toLocaleString()}
+                    </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center gap-2">
                         <button className="p-2 text-gray-600 rounded hover:bg-gray-100">

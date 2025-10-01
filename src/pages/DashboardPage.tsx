@@ -54,14 +54,28 @@ const DashboardPage: React.FC = () => {
 
   const handleValuation = async (property: Property) => {
     try {
-      const res = await valuationService.predict(property);
+      // Hiện popup loading
       Swal.fire({
-        title: "💰 Giá ước tính",
-        text: `${formatPrice(res.predicted_price)}`,
-        icon: "success",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#16a34a",
+        title: "🤖 Đang phân tích...",
+        text: "Vui lòng chờ trong giây lát",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
       });
+
+      // Gọi API song song
+      const res = await valuationService.predict(property);
+
+      setTimeout(() => {
+        Swal.fire({
+          title: "💰 Giá ước tính",
+          text: `${formatPrice(res.predicted_price)}`,
+          icon: "success",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#16a34a",
+        });
+      }, 2500);
     } catch (err) {
       console.error(err);
       Swal.fire({
