@@ -26,6 +26,30 @@ const ValuationPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // ✅ Validate: nếu có trường nào trống
+    const requiredFields = [
+      "city",
+      "district",
+      "ward",
+      "street",
+      "area",
+      "type",
+    ];
+    const emptyFields = requiredFields.filter(
+      (field) => !formData[field as keyof typeof formData]
+    );
+
+    if (emptyFields.length > 0) {
+      Swal.fire({
+        title: "⚠️ Thiếu thông tin",
+        text: "Vui lòng điền đầy đủ các trường bắt buộc trước khi định giá.",
+        icon: "warning",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#f59e0b",
+      });
+      return; // 🚫 Dừng, không gọi API
+    }
+
     try {
       // Hiện popup loading
       Swal.fire({
