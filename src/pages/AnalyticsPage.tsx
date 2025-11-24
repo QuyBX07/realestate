@@ -56,20 +56,6 @@ const AnalyticsPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Bộ lọc thời gian + nút xuất báo cáo */}
-      {/* <div className="flex items-center justify-between mb-6">
-        <select
-          value={timeRange}
-          onChange={(e) => setTimeRange(e.target.value as TimeRange)}
-          className="px-3 py-2 border rounded"
-        >
-          <option value="7 ngày qua">7 ngày qua</option>
-          <option value="30 ngày qua">30 ngày qua</option>
-          <option value="90 ngày qua">90 ngày qua</option>
-        </select>
-        <Button>Xuất báo cáo</Button>
-      </div> */}
-
       {/* Hàng 1: Xu hướng giá + Phân bố loại BĐS */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Xu hướng giá */}
